@@ -1,0 +1,84 @@
+import java.util.Stack;
+
+public class infixToPostfixx{
+
+    // mo check ni kong ang Char kay operator
+    private boolean isOperator(char c) {
+        return c == '+' || c == '-' || c == '*' || c == '/';
+    }
+
+     // precedence sa mga operators
+    private int precedence(char c) {
+        if (c == '+' || c == '-') {
+            return 1;
+        }
+        if (c == '*' || c == '/') {
+            return 2;
+        }
+        return -1;
+    }
+
+    //convert infix to postfix
+    public String infixToPostfix(String expression) {
+        Stack<Character> stack = new Stack<>();
+        StringBuilder postfix = new StringBuilder();
+        StringBuilder numberBuffer = new StringBuilder(); // Handle multi-digit numbers
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            // kong digit gani e accumulate ang number
+            if (Character.isDigit(c)) {
+                numberBuffer.append(c);
+                continue;
+            }
+
+           //gi add ang number to the postfix Expression
+            if (numberBuffer.length() > 0) {
+                postfix.append(numberBuffer).append(' ');
+                numberBuffer.setLength(0);  // Clear the buffer
+            }
+
+            // Push '(' onto the stack
+            if (c == '(') {
+                stack.push(c);
+                continue;
+            }
+
+            // Pop operators until '(' is found
+            if (c == ')') {
+                while (!stack.isEmpty() && stack.peek() != '(') {
+                    postfix.append(stack.pop()).append(' ');
+                }
+                stack.pop(); // Remove '('
+                continue;
+            }
+
+            // Handle operators
+            if (isOperator(c)) {
+                while (!stack.isEmpty() && precedence(c) <= precedence(stack.peek())) {
+                    postfix.append(stack.pop()).append(' ');
+                }
+                stack.push(c);
+            }
+        }
+
+       // mo add sa mga numbers kong naa mn
+        if (numberBuffer.length() > 0) {
+            postfix.append(numberBuffer).append(' ');
+        }
+
+        //mo pop sa mga remaining operators
+        while (!stack.isEmpty()) {
+            postfix.append(stack.pop()).append(' ');
+        }
+
+        return postfix.toString().trim();  // Return the postfix result
+    }
+
+    public static void main(String[] args) {
+        infixToPostfixx converter = new infixToPostfixx();
+        String infix = " 10 * 2 / 5 (8 - 1)";
+        System.out.println("Postfix Expression: " + converter.infixToPostfix(infix));
+    }
+}
