@@ -27,24 +27,24 @@ public class Main {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().setBackground(Color.black);
-        
+        ImageIcon image = new ImageIcon("Calculator_512.png");
+        frame.setIconImage(image.getImage());
         
         try {
-            Image logo = ImageIO.read(new File("icon2.png"));
+            Image logo = ImageIO.read(new File("logo.png"));
             frame.setIconImage(logo);
         } catch (Exception e) {
             e.printStackTrace();
         }
         
-            //jpanel
-            JPanel panel = new JPanel();
-            panel.setLayout(null);
-            panel.setBackground(Color.BLACK);
+        //jpanel
+        JPanel panel = new JPanel();
+        panel.setLayout(null);
+        panel.setBackground(Color.BLACK);
 
         //title lable
         JLabel label = new JLabel("Sign In");
         label.setFont(new Font("Arial", Font.BOLD, 36));
-        label.setForeground(Color.WHITE);
         label.setBounds(220, 20, 200, 40);
         panel.add(label);
 
@@ -53,7 +53,6 @@ public class Main {
         //user
         JLabel userLabel = new JLabel("Email or mobile number");
         userLabel.setBounds(70, 100, 200, 30);
-        userLabel.setForeground(Color.white);
         panel.add(userLabel);
 
         JTextField userField = new JTextField();
@@ -63,14 +62,13 @@ public class Main {
         //password
         JLabel Passwordlabel = new JLabel("Password");
         Passwordlabel.setBounds(70, 170, 200, 30);
-        Passwordlabel.setForeground(Color.WHITE);
         panel.add(Passwordlabel);
 
         JPasswordField passField = new JPasswordField();
         passField.setBounds(70, 200, 400, 30);
         panel.add(passField);
         
-        //Sign in button
+        //log in button
         JButton button = new JButton("Sign In");
         button.setBounds(70, 250, 400, 40);
         button.setBackground(Color.RED);
@@ -92,7 +90,7 @@ public class Main {
                     if (acc.get(userName).equals(password)) {
                         JOptionPane.showMessageDialog(frame,  "Log In Successfully");
                         frame.dispose();
-                        Calculator calc = new Calculator();
+                        new PlayListGui();
                     }else{
                         JOptionPane.showMessageDialog(frame,  "InCorrect Password", "Error", JOptionPane.ERROR_MESSAGE);
                     }
@@ -102,31 +100,32 @@ public class Main {
             }
             
         });
-
-        //Sign up button
-        JButton signupButton = new JButton("Sign Up");
-        signupButton.setBounds(70, 300, 400, 40);
-        signupButton.setBackground(Color.DARK_GRAY);
-        signupButton.setForeground(Color.WHITE);
-        signupButton.setFont(new Font("Arial", Font.BOLD, 18));
-        panel.add(signupButton);
-
-        signupButton.addActionListener(new ActionListener() {
+        
+         JButton signupButton = new JButton("Sign Up");
+         signupButton.setBounds(70, 300, 400, 40);
+         signupButton.setBackground(Color.DARK_GRAY);
+         signupButton.setForeground(Color.WHITE);
+         signupButton.setFont(new Font("Arial", Font.BOLD, 18));
+         panel.add(signupButton);
+         
+         signupButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(frame, " Signing Up....");
-                frame.dispose();
-                Signup sup = new Signup();
+                new Signup();
+                frame.setVisible(false);
+                
             }
             
         });
+          
     }
 
     static HashMap<String, String> readFile(){
         HashMap<String, String> acc = new HashMap<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Joseph\\Desktop\\userInfo.txt"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Joseph\\Desktop\\uwa\\codingBit(java)\\log-in\\userInfo.txt"))) {
             String data;
             while ((data = br.readLine())!= null) {
                 String pass = br.readLine();

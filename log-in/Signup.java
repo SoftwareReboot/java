@@ -16,9 +16,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 public class Signup {
-    private static final String FILE_PATH = "C:\\Users\\Joseph\\Desktop\\userInfo.txt";
+    private static final String FILE_PATH = "C:\\Users\\Joseph\\Desktop\\uwa\\codingBit(java)\\log-in\\userInfo.txt";
     private static HashMap<String, String> database = new HashMap<>();
-    public static void main(String[] args) {
+    public Signup(){
                 //frame
                 JFrame frame = new JFrame("Sign Up");
                 frame.setSize(558, 500);
@@ -87,6 +87,7 @@ public class Signup {
                         } else if (!password.equals(confirmPassword)) {
                             JOptionPane.showMessageDialog(frame, "Passwords do not match.", "Error", JOptionPane.ERROR_MESSAGE);
                         } else {
+                            writeToFile(email, password); 
                             JOptionPane.showMessageDialog(frame, "Registration successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                         }
                     }
@@ -98,9 +99,11 @@ public class Signup {
             }
         
             private static void writeToFile(String email, String password){
-                try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
-                    bw.write(email + ":" + password);
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
+                    bw.write(email);
                     bw.newLine();
+                    bw.write(password);
+                    
 
                 } catch (IOException e) {
                     e.printStackTrace();
