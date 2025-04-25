@@ -1,0 +1,112 @@
+import java.util.*;
+
+class RipplePathAlgorithm {
+
+    // Graph representation using adjacency list and edge weights
+    static class Graph {
+        Map<String, List<Edge>> adjList = new HashMap<>();
+
+        void addEdge(String src, String dest, int weight) {
+            adjList.putIfAbsent(src, new ArrayList<>());
+            adjList.putIfAbsent(dest, new ArrayList<>());
+            adjList.get(src).add(new Edge(dest, weight));
+            adjList.get(dest).add(new Edge(src, weight)); // For undirected graph
+        }
+
+        static class Edge {
+            String destination;
+            int weight;
+
+            Edge(String destination, int weight) {
+                this.destination = destination;
+                this.weight = weight;
+            }
+        }
+    }
+
+    // Function to find the shortest path using Ripple Path Algorithm
+    public static List<String> findShortestPath(Graph graph, String start, String goal) {
+        // Create a map to track the distance from start node
+        Map<String, Integer> distances = new HashMap<>();
+        // Create a map to track the previous node in the path
+        Map<String, String> previousNodes = new HashMap<>();
+        // Initialize all distances to infinity
+        for (String node : graph.adjList.keySet()) {
+            distances.put(node, Integer.MAX_VALUE);
+        }
+        distances.put(start, 0);
+
+        // Relaxation: Propagate outward like a wave (Ripple)
+        Queue<String> queue = new LinkedList<>();
+        queue.offer(start);
+        Set<String> visited = new HashSet<>();
+
+        while (!queue.isEmpty()) {
+            String current = queue.poll();
+            visited.add(current);
+
+            for (Graph.Edge edge : graph.adjList.get(current)) {
+                String neighbor = edge.destination;
+                int newDist = distances.get(current) + edge.weight;
+
+                // If a shorter path to the neighbor is found
+                if (newDist < distances.get(neighbor)) {
+                    distances.put(neighbor, newDist);
+                    previousNodes.put(neighbor, current);
+                    if (!visited.contains(neighbor)) {
+                        queue.offer(neighbor);
+                    }
+                }
+            }
+        }
+
+        // Detect negative weight cycles by checking for further relaxation
+        for (String node : graph.adjList.keySet()) {
+            for (Graph.Edge edge : graph.adjList.get(node)) {
+                String neighbor = edge.destination;
+                if (distances.get(node) + edge.weight < distances.get(neighbor)) {
+                    // Negative weight cycle detected
+                    return Collections.singletonList("Negative weight cycle detected.");
+                }
+            }
+        }
+
+        // Reconstruct the shortest path
+        List<String> path = new ArrayList<>();
+        String currentNode = goal;
+        while (currentNode != null) {
+            path.add(currentNode);
+            currentNode = previousNodes.get(currentNode);
+        }
+
+        // If no path found, return empty list
+        if (path.size() == 1 && !path.get(0).equals(goal)) {
+            return Collections.singletonList("No valid path found.");
+        }
+
+        Collections.reverse(path);
+        return path;
+    }
+
+    public static void main(String[] args) {
+        Graph graph = new Graph();
+        // Create graph with nodes and edges (with weights, including negative weights)
+        graph.addEdge("A", "B", 4);
+        graph.addEdge("A", "C", 2);
+        graph.addEdge("B", "C", 5);
+        graph.addEdge("B", "D", 10);
+        graph.addEdge("C", "D", 4); // Negative edge
+        graph.addEdge("D", "E", 3);
+        graph.addEdge("C", "E", 7);
+
+        // Define start and goal
+        String start = "A";
+        String goal = "E";
+        
+        // Find the shortest path
+        List<String> result = findShortestPath(graph, start, goal);
+        
+        // Output the result
+        System.out.println("Shortest path found: " + result);
+    }
+}
