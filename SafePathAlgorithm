@@ -1,0 +1,163 @@
+import java.util.*;
+
+public class SafePathMain {
+    public static void main(String[] args) {
+        SafePath.Graph graph = new SafePath.Graph();
+        graph.addEdge("A", "B", 4);
+        graph.addEdge("A", "C", 2);
+        graph.addEdge("B", "C", 5);
+        graph.addEdge("B", "D", 10);
+        graph.addEdge("B", "E", 2);
+        graph.addEdge("C", "D", 4); 
+        graph.addEdge("D", "E", 3);
+        //Expected output: Shortest path [A, B, E]
+        
+
+        /* graph.addEdge("A", "B", 2);   
+        graph.addEdge("B", "C", -4); 
+        graph.addEdge("C", "A", 1);
+        // Expected output: Negative cycle detected
+        // a --> b --> c 
+        // 2  + -4  +  1 = -1
+ */
+        String start = "A";
+        String goal  = "E";
+
+        Map<String, Integer> result = SafePath.findShortestPaths(graph, start);
+
+        if (result == null) {
+            System.out.println("Negative cycle detected");
+        } else if (!result.containsKey(goal) || result.get(goal) == Integer.MAX_VALUE) {
+            System.out.println("No path found from " + start + " to " + goal);
+        } else {
+            List<String> path = SafePath.reconstructPath(start, goal);
+            System.out.println("Shortest path: " + path);
+        }
+    }
+
+    public static class SafePath {
+        static class Edge {
+            String dest;
+            int weight;
+
+            Edge(String dest, int weight) {
+                this.dest = dest;
+                this.weight = weight;
+            }
+        }
+
+        static class Graph {
+            Map<String, List<Edge>> adjList = new HashMap<>();
+
+            void addEdge(String src, String dest, int weight) {
+                adjList.putIfAbsent(src, new ArrayList<>());
+                adjList.putIfAbsent(dest, new ArrayList<>());
+                adjList.get(src).add(new Edge(dest, weight));
+            }
+
+            boolean hasNegativeEdge() {
+                for (List<Edge> edges : adjList.values()) {
+                    for (Edge edge : edges) {
+                        if (edge.weight < 0) return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        static Map<String, String> previousMap = new HashMap<>();
+
+        public static Map<String, Integer> findShortestPaths(Graph graph, String start) {
+            if (graph.hasNegativeEdge()) {
+                System.out.println("Negative weight found, Using Bellman-Ford Algorithm...");
+                return bellmanFord(graph, start);
+            } else {
+                System.out.println("No negative weight found, Using Dijkstra Algorithm...");
+                return dijkstra(graph, start);
+            }
+        }
+
+        public static Map<String, Integer> dijkstra(Graph graph, String start) {
+            Map<String, Integer> distances = new HashMap<>();
+            previousMap.clear();
+
+            for (String node : graph.adjList.keySet()) {
+                distances.put(node, Integer.MAX_VALUE);
+            }
+            distances.put(start, 0);
+
+            PriorityQueue<String> queue = new PriorityQueue<>(Comparator.comparingInt(distances::get));
+            queue.add(start);
+
+            while (!queue.isEmpty()) {
+                String current = queue.poll();
+
+                for (Edge edge : graph.adjList.getOrDefault(current, new ArrayList<>())) {
+                    int newDist = distances.get(current) + edge.weight;
+                    if (newDist < distances.get(edge.dest)) {
+                        distances.put(edge.dest, newDist);
+                        previousMap.put(edge.dest, current);
+                        queue.add(edge.dest);
+                    }
+                }
+            }
+            return distances;
+        }
+
+        public static Map<String, Integer> bellmanFord(Graph graph, String start) {
+            Map<String, Integer> distances = new HashMap<>();
+            previousMap.clear();
+
+            for (String node : graph.adjList.keySet()) {
+                distances.put(node, Integer.MAX_VALUE);
+            }
+            distances.put(start, 0);
+
+            int V = graph.adjList.size();
+
+            // Relax all edges V-1 times
+            for (int i = 0; i < V - 1; i++) {
+                for (String u : graph.adjList.keySet()) {
+                    for (Edge edge : graph.adjList.get(u)) {
+                        if (distances.get(u) != Integer.MAX_VALUE &&
+                            distances.get(u) + edge.weight < distances.get(edge.dest)) {
+                            distances.put(edge.dest, distances.get(u) + edge.weight);
+                            previousMap.put(edge.dest, u);
+                        }
+                    }
+                }
+            }
+
+            // Check for negative-weight cycles
+            for (String u : graph.adjList.keySet()) {
+                for (Edge edge : graph.adjList.get(u)) {
+                    if (distances.get(u) != Integer.MAX_VALUE &&
+                        distances.get(u) + edge.weight < distances.get(edge.dest)) {
+                        return null; // Negative cycle detected
+                    }
+                }
+            }
+
+            return distances;
+        }
+
+       public static List<String> reconstructPath(String start, String goal) {
+            List<String> path = new ArrayList<>();
+            String current = goal;
+
+            while (current != null && !current.equals(start)) {
+                path.add(current);
+                current = previousMap.get(current);
+            }
+
+            if (current == null) {
+                return Collections.emptyList(); // No path found
+            }
+
+            path.add(start);
+            Collections.reverse(path);
+            return path;
+        }
+
+    }
+}
